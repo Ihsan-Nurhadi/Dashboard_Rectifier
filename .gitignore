@@ -1,37 +1,39 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
+*.pyo
+*.pyd
 .Python
+*.pyc
+
+# Virtual environment
 venv/
 env/
 ENV/
-*.egg-info/
-dist/
-build/
-*.db
-*.sqlite3
+.venv/
 
 # Django
+*.log
+local_settings.py
 db.sqlite3
+db.sqlite3-journal
 media/
 staticfiles/
+
+# Environment files
 .env
+.env.local
 
-# Node
-node_modules/
-dist/
-.cache/
-*.log
+# OS files
+.DS_Store
+Thumbs.db
 
-# IDEs
+# Editor
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
-# OS
-.DS_Store
-Thumbs.db
+# Docker
+*.tar.gz
+

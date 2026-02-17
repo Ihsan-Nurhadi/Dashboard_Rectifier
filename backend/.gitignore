@@ -1,0 +1,32 @@
+# Environment files - NEVER commit these!
+backend/.env
+frontend-nextjs/.env.production
+frontend-nextjs/.env.local
+
+# Next.js build
+frontend-nextjs/.next/
+frontend-nextjs/node_modules/
+frontend-nextjs/out/
+
+# Python
+backend/__pycache__/
+backend/venv/
+backend/env/
+backend/*.pyc
+backend/db.sqlite3
+backend/staticfiles/
+backend/media/
+
+# Docker volumes
+certbot/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Archives
+*.tar.gz
+*.zip
