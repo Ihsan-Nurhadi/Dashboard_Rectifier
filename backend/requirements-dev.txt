@@ -1,0 +1,15 @@
+# Development Requirements (Windows/Mac - without PostgreSQL)
+Django==4.2.7
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+paho-mqtt==1.6.1
+channels==4.0.0
+channels-redis==4.1.0
+daphne==4.0.0
+redis==5.0.1
+python-dotenv==1.0.0
+whitenoise==6.6.0
+
+# Note: PostgreSQL (psycopg2) not needed for local dev
+# Will use SQLite for development
+# Production uses PostgreSQL in Docker container
