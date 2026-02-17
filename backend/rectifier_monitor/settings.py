@@ -7,7 +7,7 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = '=jqsdps(=^&$br2d#*=#7tm-bj4s@r4mw#=pwdjw^akdz0021('
+SECRET_KEY = 'dd37f50847e46df268486ce9c1f172e3a8489d9793abf2bd2b0a44e5b919c859044ac787e76910aba2f43ab1d7d0212eb7d7'
 
 DEBUG = True
 
