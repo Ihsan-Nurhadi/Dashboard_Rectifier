@@ -1,5 +1,4 @@
 services:
-  # PostgreSQL Database
   db:
     image: postgres:15-alpine
     container_name: rectifier_db
@@ -18,7 +17,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis for Channels/WebSocket
   redis:
     image: redis:7-alpine
     container_name: rectifier_redis
@@ -34,7 +32,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Django Backend
   backend:
     build:
       context: ./backend
@@ -58,9 +55,40 @@ services:
     command: >
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
-             daphne -b 0.0.0.0 -p 8000 rectifier_monitor.asgi:application"
+             gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 rectifier_monitor.wsgi:application"
 
-  # Next.js Frontend
+  mqtt_listener:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rectifier_mqtt_listener
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - rectifier_network
+    command: python mqtt_listener.py
+
+  mqtt_publisher:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rectifier_mqtt_publisher
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - rectifier_network
+    command: python mqtt_complete_publisher.py
+
   frontend:
     build:
       context: ./frontend-nextjs
@@ -76,14 +104,12 @@ services:
     networks:
       - rectifier_network
 
-  # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
     container_name: rectifier_nginx
     restart: unless-stopped
     ports:
       - "3000:80"
-      # - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
@@ -96,7 +122,6 @@ services:
     networks:
       - rectifier_network
 
-  # Certbot for SSL (optional)
   certbot:
     image: certbot/certbot
     container_name: rectifier_certbot
