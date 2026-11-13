@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "Rectifier Monitoring",
-  description: "IoT Power System Dashboard",
+  title: "IPLH Monitoring System",
+  description: "Integrated Power & Load Health Monitoring System",
 };
 
 export default function RootLayout({

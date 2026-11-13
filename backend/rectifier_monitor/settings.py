@@ -13,7 +13,17 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost",
     "127.0.0.1",
-    "103.176.45.14",]
+    "110.232.92.134",
+    "backend",
+    "nginx",
+    "*",]
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://110.232.92.134:3008',
+    'http://110.232.92.134',
+    'http://localhost:3008',
+    'http://localhost:3000',
+]
 
 INSTALLED_APPS = [
     'daphne',

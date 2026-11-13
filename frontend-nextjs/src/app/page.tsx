@@ -1,66 +1,137 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { Header } from "@/components/layout/Header";
-import { SiteInfoCard } from "@/components/dashboard/SiteInfoCard";
-import { EnvironmentStatusCard } from "@/components/dashboard/EnvironmentStatusCard";
-import { RectifierModuleStatusCard } from "@/components/dashboard/RectifierModuleStatusCard";
-import { RectifierStatusCard } from "@/components/dashboard/RectifierStatusCard";
-import { BatteryStatusCard } from "@/components/dashboard/BatteryStatusCard";
+import { SiteSidebar } from "@/components/dashboard/SiteSidebar";
+import { DeviceDetailSection } from "@/components/dashboard/DeviceDetailSection";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
-export default function Dashboard() {
-  const { data, isLoading, error } = useDashboardData();
+// Dynamically import Map with ssr: false to avoid window errors in Next.js
+const Map = dynamic(() => import("@/components/ui/Map"), { 
+  ssr: false,
+  loading: () => (
+    <div className="h-full w-full bg-slate-100 flex flex-col items-center justify-center text-slate-500 text-sm">
+      <div className="w-8 h-8 border-2 border-slate-300 border-t-slate-800 rounded-full animate-spin mb-2"></div>
+      <span className="font-medium">Memuat peta seluruh site...</span>
+    </div>
+  )
+});
 
-  if (error) {
+export default function Dashboard() {
+  const { data, sites, selectedSite, setSelectedSite, isLoading, error, isBackendOnline, refetch } = useDashboardData();
+  const [currentView, setCurrentView] = useState<'map' | 'detail'>('map');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // Monitor native browser fullscreen change
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (typeof document === 'undefined') return;
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+  };
+
+  const handleSelectSite = (siteName: string) => {
+    setSelectedSite(siteName);
+  };
+
+  const handleOpenSiteDetail = (siteName: string) => {
+    setSelectedSite(siteName);
+    setCurrentView('detail');
+  };
+
+  const handleBackToMap = () => {
+    setCurrentView('map');
+  };
+
+  // Loading state before first data arrives
+  if (isLoading && sites.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50/50 p-6 md:p-8 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-500 text-xl font-semibold mb-4">⚠️ Connection Error</div>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <p className="text-sm text-gray-500">
-            Make sure Django backend is running at{' '}
-            <code className="bg-gray-100 px-2 py-1 rounded">http://localhost:8000</code>
-          </p>
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-100">
+        <div className="w-9 h-9 border-2 border-slate-300 border-t-slate-800 rounded-full animate-spin mb-3"></div>
+        <p className="text-slate-700 text-sm font-semibold">Memuat IPLH Monitoring System...</p>
+      </div>
+    );
+  }
+
+  // 1. FULLSCREEN MAP VIEW WITH SIDEBAR
+  if (currentView === 'map') {
+    return (
+      <div className="h-screen w-screen overflow-hidden flex flex-col bg-slate-100">
+        {/* Sleek Top Header Navigation */}
+        <Header 
+          onRefresh={refetch} 
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={toggleFullscreen}
+          isSidebarOpen={isSidebarOpen}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          sitesCount={sites.length}
+          isBackendOnline={isBackendOnline}
+        />
+
+        {/* Main Area: Sidebar + Fullscreen Map */}
+        <div className="flex-1 w-full h-[calc(100vh-3.25rem)] flex relative overflow-hidden">
+          {/* Left Sidebar: Site Explorer with Search Bar */}
+          <SiteSidebar 
+            sites={sites}
+            selectedSiteName={selectedSite}
+            onSelectSite={handleSelectSite}
+            isOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+          />
+
+          {/* Fullscreen Map Area */}
+          <main className="flex-1 h-full w-full relative overflow-hidden">
+            <Map 
+              sites={sites}
+              selectedSiteName={selectedSite}
+              onSelectSite={handleSelectSite}
+              onOpenSiteDetail={handleOpenSiteDetail}
+              isFullscreen={isFullscreen}
+              onToggleFullscreen={toggleFullscreen}
+            />
+          </main>
         </div>
       </div>
     );
   }
 
+  // 2. DEVICE DETAIL PAGE (Opened via "Site Detail" button)
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 md:p-8">
-      <div className="max-w-[1600px] mx-auto space-y-6">
-        <Header />
+    <div className="min-h-screen bg-[#f3f4f6] flex flex-col">
+      <Header 
+        onRefresh={refetch} 
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={toggleFullscreen}
+        isSidebarOpen={false}
+        sitesCount={sites.length}
+        isBackendOnline={isBackendOnline}
+      />
+
+      <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-8 space-y-6">
+        <DeviceDetailSection 
+          data={data}
+          onBackToMap={handleBackToMap}
+          onRefresh={refetch}
+        />
         
-        {isLoading && (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading dashboard data...</p>
-          </div>
-        )}
-        
-        {!isLoading && (
-          <>
-            <div className="grid grid-cols-12 gap-6">
-              {/* Row 1: Site Info */}
-              <SiteInfoCard data={data.siteInfo} />
-              
-              {/* Row 2: Environment & Modules */}
-              <EnvironmentStatusCard data={data.environment} />
-              <RectifierModuleStatusCard data={data.modules} />
-              
-              {/* Row 3: Rectifier Status */}
-              <RectifierStatusCard data={data.rectifier} />
-              
-              {/* Row 4: Battery Status */}
-              <BatteryStatusCard data={data.battery} />
-            </div>
-            
-            <footer className="text-center text-xs text-gray-400 mt-12 pb-4 font-mono">
-              Last updated: {data.siteInfo.lastData} UTC
-            </footer>
-          </>
-        )}
-      </div>
+        <footer className="text-center text-xs text-slate-400 mt-8 pb-4 font-mono">
+          IPLH Monitoring System • Waktu data: {data.siteInfo.lastData} • Solid Matte UI
+        </footer>
+      </main>
     </div>
   );
 }

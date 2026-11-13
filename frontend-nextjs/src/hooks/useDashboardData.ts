@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { DashboardData } from '@/types';
+import { useState, useEffect, useRef } from 'react';
+import { DashboardData, SiteOverview } from '@/types';
 import { RectifierAPI } from '@/services/api';
 import { format } from 'date-fns';
 
@@ -46,30 +46,82 @@ const INITIAL_DATA: DashboardData = {
     startBackup: 'No data',
     socAvg: 0,
   },
+  powerSources: {
+    pln: {
+      voltage: 220.0,
+      current: 15.0,
+      frequency: 50.0,
+      status: 'Normal',
+    },
+    genset: {
+      status: 'Mati',
+      voltage: 0.0,
+      current: 0.0,
+      frequency: 0.0,
+      fuelLiter: 120.0,
+      fuelCapacity: 200.0,
+      fuelPercentage: 60.0,
+    },
+    solarMppt: {
+      pvVoltage: 65.0,
+      pvCurrent: 12.0,
+      pvPower: 780.0,
+      dailyEnergy: 4.8,
+      status: 'Charging',
+    },
+  },
 };
 
 export function useDashboardData() {
   const [data, setData] = useState<DashboardData>(INITIAL_DATA);
+  const [sites, setSites] = useState<SiteOverview[]>([]);
+  const [selectedSite, setSelectedSite] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isBackendOnline, setIsBackendOnline] = useState(true);
+  const selectedSiteRef = useRef<string | null>(null);
+  selectedSiteRef.current = selectedSite;
 
   const fetchData = async () => {
     try {
-      const dashboardData = await RectifierAPI.getDashboardData();
-      
+      // Fetch sites list and current dashboard data
+      const [sitesData, dashboardData] = await Promise.all([
+        RectifierAPI.getSites(),
+        RectifierAPI.getDashboardData(selectedSiteRef.current || undefined)
+      ]);
+
+      setIsBackendOnline(RectifierAPI.backendAvailable);
+
+      if (sitesData && sitesData.length > 0) {
+        setSites(sitesData);
+        if (!selectedSiteRef.current) {
+          setSelectedSite(sitesData[0].siteName);
+        }
+      }
+
       if (dashboardData) {
+        dashboardData.powerSources = dashboardData.powerSources || INITIAL_DATA.powerSources;
         setData(dashboardData);
         setError(null);
-      } else {
-        setError('No data available from backend');
       }
     } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setError('Failed to fetch data from backend');
+      console.warn('Dashboard fetch error handled gracefully:', err);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Re-fetch immediately when selectedSite changes
+  useEffect(() => {
+    if (selectedSite) {
+      RectifierAPI.getDashboardData(selectedSite).then((dashboardData) => {
+        if (dashboardData) {
+          dashboardData.powerSources = dashboardData.powerSources || INITIAL_DATA.powerSources;
+          setData(dashboardData);
+        }
+      });
+    }
+  }, [selectedSite]);
 
   useEffect(() => {
     // Initial fetch
@@ -83,5 +135,14 @@ export function useDashboardData() {
     return () => clearInterval(interval);
   }, []);
 
-  return { data, isLoading, error };
+  return { 
+    data, 
+    sites, 
+    selectedSite, 
+    setSelectedSite, 
+    isLoading, 
+    error, 
+    isBackendOnline,
+    refetch: fetchData 
+  };
 }

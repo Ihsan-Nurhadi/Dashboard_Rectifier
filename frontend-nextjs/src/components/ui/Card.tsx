@@ -8,7 +8,7 @@ interface CardProps {
 
 export function Card({ children, className }: CardProps) {
   return (
-    <div className={cn("bg-white rounded-xl shadow-sm border border-gray-100 p-6", className)}>
+    <div className={cn("bg-white rounded-xl shadow-sm border border-slate-200 p-6", className)}>
       {children}
     </div>
   );
@@ -22,9 +22,9 @@ interface CardHeaderProps {
 
 export function CardHeader({ title, icon, className }: CardHeaderProps) {
   return (
-    <div className={cn("flex items-center gap-2 mb-4 border-b border-dashed border-gray-100 pb-2", className)}>
+    <div className={cn("flex items-center gap-2 mb-4 border-b border-slate-100 pb-2.5", className)}>
       {icon}
-      <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">{title}</h3>
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">{title}</h3>
     </div>
   );
 }

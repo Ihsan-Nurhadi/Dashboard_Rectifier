@@ -64,6 +64,26 @@ class RectifierData(models.Model):
     # Module Status (storing as JSON string)
     modules_status = models.JSONField(default=list, blank=True)
     
+    # Power Meter PLN (AC)
+    pln_voltage = models.FloatField(default=220.0, null=True, blank=True)
+    pln_current = models.FloatField(default=15.0, null=True, blank=True)
+    pln_frequency = models.FloatField(default=50.0, null=True, blank=True)
+    pln_status = models.CharField(max_length=20, default='Normal')
+
+    # Genset & Fuel
+    genset_status = models.CharField(max_length=20, default='Mati')  # Hidup / Mati
+    genset_voltage = models.FloatField(default=0.0, null=True, blank=True)
+    genset_current = models.FloatField(default=0.0, null=True, blank=True)
+    genset_frequency = models.FloatField(default=0.0, null=True, blank=True)
+    fuel_level_liter = models.FloatField(default=120.0, null=True, blank=True)  # Liter
+    fuel_capacity_liter = models.FloatField(default=200.0, null=True, blank=True)  # Kapasitas tangki
+
+    # MPPT Solar Panel (DC)
+    mppt_pv_voltage = models.FloatField(default=65.0, null=True, blank=True)  # Tegangan DC dari Solar Panel
+    mppt_pv_current = models.FloatField(default=12.0, null=True, blank=True)
+    mppt_pv_power = models.FloatField(default=780.0, null=True, blank=True)
+    mppt_daily_energy = models.FloatField(default=4.8, null=True, blank=True)
+
     created_at = models.DateTimeField(default=timezone.now)
     
     class Meta:

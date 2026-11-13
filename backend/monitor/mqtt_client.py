@@ -104,6 +104,26 @@ class MQTTClient:
                 
                 # Modules Status
                 modules_status=payload.get('modules_status', []),
+                
+                # Power Meter PLN (AC)
+                pln_voltage=payload.get('pln_voltage', 220.0),
+                pln_current=payload.get('pln_current', 15.0),
+                pln_frequency=payload.get('pln_frequency', 50.0),
+                pln_status=payload.get('pln_status', 'Normal'),
+                
+                # Genset & Fuel
+                genset_status=payload.get('genset_status', 'Mati'),
+                genset_voltage=payload.get('genset_voltage', 0.0),
+                genset_current=payload.get('genset_current', 0.0),
+                genset_frequency=payload.get('genset_frequency', 0.0),
+                fuel_level_liter=payload.get('fuel_level_liter', 120.0),
+                fuel_capacity_liter=payload.get('fuel_capacity_liter', 200.0),
+                
+                # MPPT Solar Panel (DC)
+                mppt_pv_voltage=payload.get('mppt_pv_voltage', 65.0),
+                mppt_pv_current=payload.get('mppt_pv_current', 12.0),
+                mppt_pv_power=payload.get('mppt_pv_power', 780.0),
+                mppt_daily_energy=payload.get('mppt_daily_energy', 4.8),
             )
             
             logger.info(f"Data saved to database: {rectifier_data.id}")

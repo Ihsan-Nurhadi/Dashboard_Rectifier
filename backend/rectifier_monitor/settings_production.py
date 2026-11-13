@@ -16,7 +16,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'dd37f50847e46df268486ce9c1f172e3a8489
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', "localhost,127.0.0.1,103.176.45.14").split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', "localhost,127.0.0.1,110.232.92.134,backend,nginx,*").split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -100,12 +100,15 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS Settings
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+# CORS & CSRF Settings
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-
-# For development, you can use:
-# CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = [
+    'http://110.232.92.134:3008',
+    'http://110.232.92.134',
+    'http://localhost:3008',
+    'http://localhost:3000',
+]
 
 # Channels Layer with Redis
 CHANNEL_LAYERS = {

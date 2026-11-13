@@ -60,19 +60,24 @@ echo ""
 echo "📁 Collecting static files..."
 docker-compose exec -T backend python manage.py collectstatic --noinput
 
+# Seed sample sites
+echo ""
+echo "📍 Seeding sample sites data..."
+docker-compose exec -T backend python sample_data.py || true
+
 echo ""
 echo "=========================================="
-echo "✅ Deployment Complete!"
+echo "✅ IPLH Monitoring System Deployed!"
 echo "=========================================="
 echo ""
 echo "Services are running:"
 docker-compose ps
 
 echo ""
-echo "🌐 Access your dashboard:"
-echo "   Frontend: http://your-domain.com"
-echo "   API:      http://your-domain.com/api/"
-echo "   Admin:    http://your-domain.com/admin/"
+echo "🌐 Access your dashboard at VPS:"
+echo "   Dashboard: http://110.232.92.134:3008"
+echo "   REST API:  http://110.232.92.134:3008/api/"
+echo "   Admin:     http://110.232.92.134:3008/admin/"
 echo ""
 echo "📝 Next steps:"
 echo "   1. Create superuser: docker-compose exec backend python manage.py createsuperuser"
